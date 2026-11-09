@@ -1,0 +1,16 @@
+{
+  "label": "Studio noir",
+  "plate": "plate.jpg",
+  "focus": [0.5, 0.42],
+  "blur": 4.0,
+  "exposure": 1.0,
+  "look": {"contrast": 1.05, "saturation": 0.95, "warmth": 0.1, "vignette": 0.25},
+  "harmonize": 0.2,
+  "edge_choke": 1,
+  "light_wrap": 0.12,
+  "wrap_radius": 22,
+  "ambient_shadow": 0.0,
+  "grain": "auto",
+  "prompt": "Replace only the background with a seamless charcoal-black photo studio backdrop, softly lit by a warm light pool behind the person, premium editorial portrait look. Keep the person, face, lip movements, hands and clothes exactly as in the original video.",
+  "notes": "Fond sombre : éviter une tenue noire sans liseré de lumière (prévoir une lumière de contour au tournage)."
+}

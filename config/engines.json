@@ -1,0 +1,35 @@
+{
+  "_note": "Tarifs et identifiants relevés le 2026-11-09 (sources : docs/comparatif-moteurs.md). Ils changent souvent : vérifiez-les sur la console du fournisseur avant tout appel payant.",
+  "local": {
+    "label": "Local : détourage RVM + compositing FFmpeg",
+    "usd_per_second": 0.0,
+    "subscription": "aucun"
+  },
+  "runway": {
+    "label": "Runway Aleph 2.0 (API vidéo→vidéo)",
+    "base_url": "https://api.dev.runwayml.com/v1",
+    "version_header": "2024-11-06",
+    "model": "aleph2",
+    "ratio": "720:1280",
+    "credits_per_second": 28,
+    "min_credits": 56,
+    "usd_per_credit": 0.01,
+    "max_seconds": 30,
+    "send_plate_as_reference": true,
+    "subscription": "aucun pour l'API (crédits prépayés sur dev.runwayml.com)"
+  },
+  "kling": {
+    "label": "Kling O1 Edit via fal.ai (vidéo→vidéo)",
+    "queue_url": "https://queue.fal.run",
+    "endpoint": "fal-ai/kling-video/o1/video-to-video/edit",
+    "usd_per_second": 0.168,
+    "min_seconds": 3,
+    "max_seconds": 10,
+    "send_plate_as_reference": true,
+    "subscription": "aucun (fal.ai : paiement à l'usage)"
+  },
+  "budget": {
+    "max_usd_per_run": 5.0,
+    "ledger": "output/depenses.csv"
+  }
+}

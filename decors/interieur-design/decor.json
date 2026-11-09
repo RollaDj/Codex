@@ -1,0 +1,16 @@
+{
+  "label": "Intérieur design",
+  "plate": "plate.jpg",
+  "focus": [0.5, 0.45],
+  "blur": 7.0,
+  "exposure": 1.0,
+  "look": {"contrast": 1.03, "saturation": 0.92, "warmth": 0.2, "vignette": 0.18},
+  "harmonize": 0.3,
+  "edge_choke": 1,
+  "light_wrap": 0.22,
+  "wrap_radius": 26,
+  "ambient_shadow": 0.0,
+  "grain": "auto",
+  "prompt": "Replace only the background with a contemporary designer living room: warm limewash walls, low walnut sideboard with ceramic vases, abstract artwork, arc floor lamp and opal globe lights, warm evening ambience, shallow depth of field. Keep the person, face, lip movements, hands and clothes exactly as in the original video.",
+  "notes": "Ambiance chaude : balance des blancs de l'iPhone non forcée, éviter une lumière froide de face."
+}

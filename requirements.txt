@@ -1,0 +1,6 @@
+# Moteur local (gratuit) — Python 3.10+ et FFmpeg ≥ 6 (avec libx264, libzimg) requis
+numpy>=1.26
+opencv-python-headless>=4.9
+onnxruntime>=1.17
+# Optionnel : rendu procédural des décors (tools/render_decors.py), ~400 Mo
+# bpy==5.2.3

@@ -1,0 +1,11 @@
+# Rushes, rendus intermédiaires et exports : jamais dans git
+input/
+work/
+output/
+models/
+*.part
+__pycache__/
+*.pyc
+.env
+decors/_test/
+decors/*/preview.jpg

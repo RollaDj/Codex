@@ -1,0 +1,16 @@
+{
+  "label": "Appartement haussmannien",
+  "plate": "plate.jpg",
+  "focus": [0.55, 0.45],
+  "blur": 7.0,
+  "exposure": 1.0,
+  "look": {"contrast": 1.0, "saturation": 0.95, "warmth": 0.15, "vignette": 0.15},
+  "harmonize": 0.3,
+  "edge_choke": 1,
+  "light_wrap": 0.22,
+  "wrap_radius": 26,
+  "ambient_shadow": 0.0,
+  "grain": "auto",
+  "prompt": "Replace only the background with a bright Parisian Haussmann apartment: cream walls with moulded panels, herringbone oak parquet, tall French window with soft daylight, white marble fireplace and gilded mirror, shallow depth of field. Keep the person, face, lip movements, hands and clothes exactly as in the original video.",
+  "notes": "Lumière du jour venant de la gauche : se filmer face à une fenêtre ou avec une source douce à gauche."
+}
