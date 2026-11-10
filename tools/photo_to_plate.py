@@ -31,14 +31,48 @@ def tile_fill(strip: np.ndarray, height: int, downward: bool) -> np.ndarray:
     return out if downward else out[::-1]
 
 
+def extend_sides(img: np.ndarray, width: int, strip_frac: float = 0.12, blur: float = 6.0) -> np.ndarray:
+    """Widen the photo to `width` by repeating its own left/right edge texture (faded)."""
+    pad = width - img.shape[1]
+    if pad <= 0:
+        return img
+    left_w, right_w = pad // 2, pad - pad // 2
+    sw = max(8, int(img.shape[1] * strip_frac))
+
+    def side(strip: np.ndarray, n: int, outward_right: bool) -> np.ndarray:
+        cols, k = [], 0
+        while sum(c.shape[1] for c in cols) < n:
+            cols.append(strip[:, ::-1] if k % 2 == 0 else strip)
+            k += 1
+        sharp = np.hstack(cols)[:, :n].astype(np.float32)
+        if not outward_right:
+            sharp = sharp[:, ::-1]
+        soft = cv2.GaussianBlur(sharp, (0, 0), blur)
+        mean = strip.reshape(-1, 3).mean(0).astype(np.float32)
+        ramp = np.linspace(0, 1, n, dtype=np.float32)[None, :, None]
+        if not outward_right:
+            ramp = ramp[:, ::-1]
+        t = np.clip(ramp * 2, 0, 1)
+        out = sharp * (1 - t) + soft * t
+        return out * (1 - 0.5 * t) + mean * 0.5 * t
+
+    left = side(img[:, :sw], left_w, outward_right=False)
+    right = side(img[:, -sw:], right_w, outward_right=True)
+    return np.clip(np.hstack([left, img.astype(np.float32), right]), 0, 255).astype(np.uint8)
+
+
 def photo_to_plate(src: Path, dst: Path, anchor: tuple[int, int], bottom_strip: int | None,
-                   top_strip: int | None, falloff: float = 0.4, blur: float = 6.0) -> Path:
+                   top_strip: int | None, falloff: float = 0.4, blur: float = 6.0,
+                   scale: float = 1.0) -> Path:
+    """scale < 1 shrinks the photo inside the plate (smaller, more distant-looking wall
+    objects); the missing sides are filled from the photo's own edges."""
     img = cv2.imread(str(src), cv2.IMREAD_COLOR)
     if img is None:
         raise SystemExit(f"Image illisible : {src}")
-    s = W / img.shape[1]
-    img = cv2.resize(img, (W, int(round(img.shape[0] * s))), interpolation=cv2.INTER_AREA
-                     if s < 1 else cv2.INTER_LANCZOS4)
+    s = W / img.shape[1] * scale
+    img = cv2.resize(img, (int(round(img.shape[1] * s)), int(round(img.shape[0] * s))),
+                     interpolation=cv2.INTER_AREA if s < 1 else cv2.INTER_LANCZOS4)
+    img = extend_sides(img, W, blur=blur)
     top = int(round(anchor[1] - anchor[0] * s))          # plate row of the photo's first row
     plate = np.zeros((H, W, 3), np.uint8)
     y0, y1 = max(top, 0), min(top + img.shape[0], H)
@@ -87,9 +121,12 @@ def main() -> int:
     ap.add_argument("--top-strip", type=int, default=None,
                     help="ligne (photo d'origine) jusqu'à laquelle la texture du haut est répétée")
     ap.add_argument("--falloff", type=float, default=0.55, help="assombrissement de l'extension (0..1)")
+    ap.add_argument("--scale", type=float, default=1.0,
+                    help="< 1 : photo réduite dans la plaque (objets du mur plus petits, plus naturels)")
     a = ap.parse_args()
     sy, py = (int(v) for v in a.anchor.split(":"))
-    print(photo_to_plate(Path(a.src), Path(a.dst), (sy, py), a.bottom_strip, a.top_strip, a.falloff))
+    print(photo_to_plate(Path(a.src), Path(a.dst), (sy, py), a.bottom_strip, a.top_strip, a.falloff,
+                         scale=a.scale))
     return 0
 
 

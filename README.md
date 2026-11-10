@@ -38,6 +38,9 @@ python -m decorpipe run input/ma_video.MOV --decor haussmannien --duration 10
 # Les 4 décors d'un coup (le détourage est calculé une fois puis réutilisé)
 python -m decorpipe run input/ma_video.MOV --decor all
 
+# Garder le siège / fauteuil dans lequel vous êtes assis
+python -m decorpipe run input/ma_video.MOV --decor mur-beige-logos --keep-seat
+
 # Mode strict : aucune correction colorimétrique du sujet (pixels d'origine uniquement)
 python -m decorpipe run input/ma_video.MOV --decor studio-noir --strict
 
@@ -70,6 +73,7 @@ Sorties dans `output/` :
 | `interieur-design` | Intérieur design : enduit à la chaux, enfilade en noyer, luminaires | `decors/interieur-design/plate.jpg` |
 | `hotel-luxe` | Hôtel de luxe : couloir en noyer cannelé, laiton, marbre noir, lustre | `decors/hotel-luxe/plate.jpg` |
 | `mur-clair-logos` | Mur blanc cassé en lumière du jour, deux cadres noirs : Maison Bélier / ROLLA. **À privilégier pour un tournage en lumière du jour** | `decors/mur-clair-logos/plate.jpg` |
+| `mur-beige-logos` | Mur enduit beige, rayons de soleil, branche d'olivier, cadres bronze Maison Bélier / DJ ROLLA à hauteur naturelle (image fournie, convertie en 9:16) | `decors/mur-beige-logos/plate.jpg` |
 | `console-logos` | Mur enduit beige en lumière dorée, console en travertin, lampe laiton, hortensias, cadres bronze Maison Bélier / DJ ROLLA (image fournie, convertie en 9:16) | `decors/console-logos/plate.jpg` |
 | `mur-noir-logos` | Mur noir mat, deux cadres en laiton éclairés : Maison Bélier / ROLLA. Le sujet est assombri et réchauffé pour coller aux appliques ; idéal si le tournage est fait dans une pièce sombre | `decors/mur-noir-logos/plate.jpg` |
 

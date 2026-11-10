@@ -85,3 +85,21 @@ def test_faststart_detection(tmp_path):
     subprocess.run(["ffmpeg", "-v", "error", "-f", "lavfi", "-i", "color=c=black:s=64x64:d=0.2",
                     "-c:v", "libx264", str(slow)], check=True)
     assert not _faststart(slow)
+
+
+def test_seat_mask_keeps_coloured_seat_not_grey_furniture():
+    from decorpipe.matting import MattingConfig, merge_seat, seat_mask
+    h, w = 400, 240
+    frame = np.full((h, w, 3), 220, np.uint8)               # bright room
+    alpha = np.zeros((h, w), np.float32)
+    alpha[100:400, 80:160] = 1.0                            # the speaker
+    frame[300:400, 160:200] = (14, 23, 26)                  # dark teal seat touching the body
+    frame[300:340, 40:80] = (43, 42, 43)                    # grey sofa touching the body
+    cfg = MattingConfig(keep_seat=True, seat_below=0.6)
+    state: dict = {}
+    for _ in range(3):
+        seat = seat_mask(frame, alpha, cfg, state)
+    merged = merge_seat(alpha, seat)
+    assert merged[350, 180] > 0.9                          # seat kept
+    assert merged[320, 60] < 0.1                           # grey sofa dropped
+    assert merged[150, 200] < 0.1                          # room above the seat line untouched

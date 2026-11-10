@@ -26,6 +26,10 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--strict", action="store_true",
                    help="aucune retouche colorimétrique du sujet (pixels d'origine)")
     r.add_argument("--model", choices=["rvm-resnet50", "rvm-mobilenetv3"], default="rvm-resnet50")
+    r.add_argument("--keep-seat", action="store_true",
+                   help="garder le siège / fauteuil (zones sombres collées au corps, sous les épaules)")
+    r.add_argument("--seat-below", type=float, default=0.68,
+                   help="avec --keep-seat : le siège n'est cherché que sous cette hauteur (0..1)")
     r.add_argument("--no-protect-subject", action="store_true",
                    help="moteurs IA : garder le sujet régénéré par l'IA (déconseillé)")
     r.add_argument("--yes-spend", action="store_true", help="autoriser un moteur payant")
@@ -36,6 +40,7 @@ def main(argv: list[str] | None = None) -> int:
     b.add_argument("folder", help="dossier contenant les .MOV/.MP4")
     b.add_argument("--decor", default="mur-clair-logos", help="décor(s) : id, liste, ou 'all'")
     b.add_argument("--strict", action="store_true")
+    b.add_argument("--keep-seat", action="store_true", help="garder le siège / fauteuil")
     b.add_argument("--out", default=None)
 
     e = sub.add_parser("estimate", help="comparer le coût des moteurs pour une durée")
@@ -76,12 +81,13 @@ def main(argv: list[str] | None = None) -> int:
             if all(any(out.glob(f"{_slug(f.stem)}_0s_{d}_local*.mp4")) for d in decors):
                 print(f"déjà traité : {f.name}")
                 continue
-            res = process(f, decors, strict=a.strict, out_dir=out)
+            res = process(f, decors, strict=a.strict, out_dir=out,
+                          matting=MattingConfig(keep_seat=a.keep_seat))
             failed += sum(x["verdict"] == "FAIL" for x in res)
         return 1 if failed else 0
     try:
         res = process(a.input, decors, engine=a.engine, start=a.start, duration=a.duration,
-                      strict=a.strict, out_dir=a.out, matting=MattingConfig(model=a.model),
+                      strict=a.strict, out_dir=a.out, matting=MattingConfig(model=a.model, keep_seat=a.keep_seat, seat_below=a.seat_below),
                       protect_subject=not a.no_protect_subject, yes_spend=a.yes_spend,
                       max_usd=a.max_usd)
     except BudgetError as err:

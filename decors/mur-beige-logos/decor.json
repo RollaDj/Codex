@@ -1,0 +1,33 @@
+{
+  "label": "Mur beige ensoleillé + cadres bronze (logos)",
+  "plate": "plate.jpg",
+  "focus": [
+    0.5,
+    0.5
+  ],
+  "blur": 3.0,
+  "exposure": 1.0,
+  "look": {
+    "contrast": 1.0,
+    "saturation": 1.0,
+    "warmth": 0.0,
+    "vignette": 0.08
+  },
+  "harmonize": 0.35,
+  "edge_choke": 1,
+  "light_wrap": 0.25,
+  "wrap_radius": 26,
+  "ambient_shadow": 0.14,
+  "shadow_offset": [
+    -0.07,
+    0.015
+  ],
+  "grain": "auto",
+  "subject_exposure": -0.05,
+  "subject_warmth": 0.25,
+  "subject_contrast": 1.0,
+  "subject_falloff": 0.1,
+  "rim_suppress": 0.3,
+  "prompt": "Replace only the background with a warm beige plaster wall with soft sunlight streaks and an olive branch, and two bronze frames with the Maison Bélier (left) and ROLLA (right) logos. Keep the person, face, lip movements, hands and clothes exactly as in the original video.",
+  "notes": "Plaque construite depuis une image 3:4 fournie (source.webp) : tools/photo_to_plate.py --anchor 794:638 --bottom-strip 1300 --falloff 0.25 --scale 0.8. Cadres à hauteur naturelle (la tête peut passer devant), taille réaliste pour un mur à 1–2 m, ombre douce du sujet portée vers la gauche (soleil venant de la droite)."
+}
