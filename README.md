@@ -69,6 +69,7 @@ Sorties dans `output/` :
 | `studio-noir` | Studio noir : fond continu anthracite, halo de lumière chaude | `decors/studio-noir/plate.jpg` |
 | `interieur-design` | Intérieur design : enduit à la chaux, enfilade en noyer, luminaires | `decors/interieur-design/plate.jpg` |
 | `hotel-luxe` | Hôtel de luxe : couloir en noyer cannelé, laiton, marbre noir, lustre | `decors/hotel-luxe/plate.jpg` |
+| `mur-noir-logos` | Mur noir mat, deux cadres en laiton éclairés : Maison Bélier / ROLLA (logos officiels à déposer dans `decors/mur-noir-logos/logos/`) | `decors/mur-noir-logos/plate.jpg` |
 
 Chaque décor est un dossier `decors/<id>/` contenant `decor.json` (flou de profondeur,
 étalonnage, habillage lumineux, prompt pour les moteurs IA) et une **plaque** :

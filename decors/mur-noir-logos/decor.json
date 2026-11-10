@@ -1,0 +1,16 @@
+{
+  "label": "Mur noir + logos Maison Bélier / ROLLA",
+  "plate": "plate.jpg",
+  "focus": [0.5, 0.45],
+  "blur": 2.0,
+  "exposure": 1.0,
+  "look": {"contrast": 1.04, "saturation": 0.95, "warmth": 0.1, "vignette": 0.12},
+  "harmonize": 0.2,
+  "edge_choke": 1,
+  "light_wrap": 0.12,
+  "wrap_radius": 22,
+  "ambient_shadow": 0.0,
+  "grain": "auto",
+  "prompt": "Replace only the background with a matte black painted wall with two thin brass frames, each lit by a brass picture light, containing the Maison Bélier logo (left) and the ROLLA logo (right). Keep the person, face, lip movements, hands and clothes exactly as in the original video.",
+  "notes": "Flou faible pour que les logos restent lisibles. Logos officiels : déposer decors/mur-noir-logos/logos/maison-belier.(svg|png) et rolla.(svg|png), puis python tools/render_decors.py --only mur-noir-logos. Caméra calée sur un selfie assis en contre-plongée."
+}

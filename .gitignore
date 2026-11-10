@@ -9,3 +9,5 @@ __pycache__/
 .env
 decors/_test/
 decors/*/preview.jpg
+decors/*/prints/
+decors/*/logos/*.raster.png

@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import math
 import random
+import subprocess
 import sys
 from pathlib import Path
 
@@ -479,11 +480,121 @@ def hotel_luxe() -> None:
     area("fill", (0, -0.5, 2.8), (0, 4, 1.2), 2.0, 60, (1.0, 0.85, 0.7))
 
 
+
+# ----------------------------------------------------------------- brand wall (logos in frames)
+LOGO_DIR = ROOT / "decors" / "mur-noir-logos" / "logos"
+PAPER, INK = (234, 229, 219), (16, 15, 14)
+
+
+def _font(family: str, size: int):
+    from PIL import ImageFont
+    path = subprocess.check_output(["fc-match", "-f", "%{file}", family]).decode()
+    return ImageFont.truetype(path, size)
+
+
+def _load_logo(path: Path):
+    """PNG/JPG/WEBP directly; SVG rasterised with FFmpeg (librsvg)."""
+    from PIL import Image
+    if path.suffix.lower() == ".svg":
+        png = path.with_suffix(".raster.png")
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-width", "2000", "-i", str(path),
+                        "-frames:v", "1", str(png)], check=True)
+        path = png
+    return Image.open(path).convert("RGBA")
+
+
+def make_print(out: Path, stem: str, lines: list[tuple[str, str, int, int]]) -> Path:
+    """Paper + logo for one frame. Uses decors/mur-noir-logos/logos/<stem>.(svg|png|jpg|webp)
+    when present (official logo); otherwise a provisional typographic wordmark."""
+    from PIL import Image, ImageDraw
+    W, H = 1000, 1300
+    img = Image.new("RGB", (W, H), PAPER)
+    logo = next((LOGO_DIR / f"{stem}{ext}" for ext in (".svg", ".png", ".webp", ".jpg", ".jpeg")
+                 if (LOGO_DIR / f"{stem}{ext}").exists()), None)
+    if logo is not None:
+        lg = _load_logo(logo)
+        k = min(W * 0.62 / lg.width, H * 0.42 / lg.height)
+        lg = lg.resize((int(lg.width * k), int(lg.height * k)), Image.LANCZOS)
+        img.paste(lg, ((W - lg.width) // 2, (H - lg.height) // 2), lg)
+    else:
+        d = ImageDraw.Draw(img)
+        blocks = []
+        for text, family, size, track in lines:
+            f = _font(family, size)
+            widths = [d.textlength(c, font=f) for c in text]
+            blocks.append((text, f, widths, sum(widths) + track * (len(text) - 1), size, track))
+        total_h = sum(b[4] for b in blocks) + 40 * (len(blocks) - 1)
+        y = (H - total_h) / 2
+        for text, f, widths, tw, size, track in blocks:
+            x = (W - tw) / 2
+            for c, cw in zip(text, widths):
+                d.text((x, y), c, font=f, fill=INK)
+                x += cw + track
+            y += size + 40
+    out.parent.mkdir(parents=True, exist_ok=True)
+    img.save(out, quality=95)
+    return out
+
+
+def image_material(name: str, path: Path, rough: float = 0.85) -> bpy.types.Material:
+    m = bpy.data.materials.new(name)
+    m.use_nodes = True
+    nt = m.node_tree
+    tex = nt.nodes.new("ShaderNodeTexImage")
+    tex.image = bpy.data.images.load(str(path))
+    p = nt.nodes["Principled BSDF"]
+    nt.links.new(tex.outputs["Color"], p.inputs["Base Color"])
+    p.inputs["Roughness"].default_value = rough
+    return m
+
+
+def framed_print(x: float, zc: float, w: float, h: float, wall_y: float, print_path: Path,
+                 frame_mat, light: bool = True) -> None:
+    bpy.ops.mesh.primitive_plane_add(size=1, location=(x, wall_y - 0.012, zc), rotation=(math.pi / 2, 0, 0))
+    o = bpy.context.active_object
+    o.scale = (w, h, 1)
+    o.data.materials.append(image_material(f"print_{x}", print_path))
+    frame_moulding(x - w / 2, zc - h / 2, w, h, wall_y, frame_mat, t=0.022, d=0.034)
+    box("backing", (w, 0.01, h), (x, wall_y - 0.006, zc), material("back", (0.02, 0.02, 0.02), 0.9))
+    if light:   # brass picture light above the frame
+        zl = zc + h / 2 + 0.11
+        cylinder("pl_bar", 0.014, w * 0.62, (x, wall_y - 0.13, zl), frame_mat, rot=(0, math.pi / 2, 0))
+        cylinder("pl_arm", 0.006, 0.13, (x, wall_y - 0.065, zl + 0.01), frame_mat, rot=(math.pi / 2, 0, 0))
+        area(f"pl_{x}", (x, wall_y - 0.15, zl - 0.02), (x, wall_y, zc - h * 0.1), 0.02, 9,
+             (1.0, 0.78, 0.55), size_y=w * 0.55)
+
+
+def mur_noir_logos() -> None:
+    """Matte black wall, two brass frames with the Maison Bélier and ROLLA logos,
+    brass picture lights. Camera matches a seated, low-angle iPhone selfie."""
+    world((0.0, 0.0, 0.0), 0.0)
+    camera(loc=(0, -1.0, 1.05), target=(0, 1.6, 1.5), lens=26)
+    wall_y = 1.6
+    black = material("black_paint", (0.022, 0.022, 0.024), rough=0.82, noise=(6.0, 0.18), bump=0.04)
+    brass = material("brass_f", (0.80, 0.60, 0.34), 0.28, 1.0)
+    box("wall", (6, 0.1, 4), (0, wall_y + 0.05, 2.0), black)
+    box("floor", (6, 6, 0.05), (0, 0, -0.025), wood("floor_o", base=(0.16, 0.10, 0.06),
+                                                     dark=(0.07, 0.04, 0.02), planks=True, grain="Y", scale=14))
+    box("skirting", (6, 0.02, 0.12), (0, wall_y - 0.01, 0.06), black)
+    tmp = ROOT / "decors" / "mur-noir-logos" / "prints"
+    left = make_print(tmp / "maison-belier.jpg", "maison-belier",
+                      [("MAISON", "Caladea", 132, 34), ("BÉLIER", "Caladea", 132, 34)])
+    right = make_print(tmp / "rolla.jpg", "rolla", [("ROLLA", "Inter", 170, 58)])
+    w, h, zc = 0.42, 0.55, 2.0
+    framed_print(-0.58, zc, w, h, wall_y, left, brass)
+    framed_print(0.58, zc, w, h, wall_y, right, brass)
+    # Soft fill so the black wall reads as a painted surface, not a void.
+    area("fill", (0, -0.6, 2.4), (0, wall_y, 1.6), 3.0, 35, (0.95, 0.95, 1.0))
+    spot("glow", (0, -0.4, 1.3), (0, wall_y, 1.75), 220, size_deg=55, blend=1.0,
+         color=(1.0, 0.86, 0.7), radius=0.5)
+
+
 SCENES = {
     "studio-noir": (studio_noir, -0.3),
     "haussmannien": (haussmannien, -0.7),
     "interieur-design": (interieur_design, -0.35),
     "hotel-luxe": (hotel_luxe, 0.0),
+    "mur-noir-logos": (mur_noir_logos, 0.0),
 }
 
 
