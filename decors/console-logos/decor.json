@@ -1,0 +1,21 @@
+{
+  "label": "Console travertin + logos (lumière dorée)",
+  "plate": "plate.jpg",
+  "focus": [0.5, 0.5],
+  "blur": 2.0,
+  "exposure": 1.0,
+  "look": {"contrast": 1.0, "saturation": 1.0, "warmth": 0.0, "vignette": 0.08},
+  "harmonize": 0.35,
+  "edge_choke": 1,
+  "light_wrap": 0.25,
+  "wrap_radius": 26,
+  "ambient_shadow": 0.0,
+  "grain": "auto",
+  "subject_exposure": -0.1,
+  "subject_warmth": 0.3,
+  "subject_contrast": 1.0,
+  "subject_falloff": 0.12,
+  "rim_suppress": 0.3,
+  "prompt": "Replace only the background with a warm beige plaster wall in golden afternoon sunlight, a travertine console with a brass lamp, candle, books and white hydrangeas, and two bronze frames with the Maison Bélier (left) and ROLLA (right) logos. Keep the person, face, lip movements, hands and clothes exactly as in the original video.",
+  "notes": "Plaque construite depuis une image carrée fournie (source.webp) avec tools/photo_to_plate.py --anchor 672:540 --bottom-strip 1040 : cadres juste au-dessus de la tête, façade de la console prolongée vers le bas (derrière le buste). Lumière dorée : sujet légèrement réchauffé."
+}

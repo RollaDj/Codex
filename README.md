@@ -70,6 +70,7 @@ Sorties dans `output/` :
 | `interieur-design` | Intérieur design : enduit à la chaux, enfilade en noyer, luminaires | `decors/interieur-design/plate.jpg` |
 | `hotel-luxe` | Hôtel de luxe : couloir en noyer cannelé, laiton, marbre noir, lustre | `decors/hotel-luxe/plate.jpg` |
 | `mur-clair-logos` | Mur blanc cassé en lumière du jour, deux cadres noirs : Maison Bélier / ROLLA. **À privilégier pour un tournage en lumière du jour** | `decors/mur-clair-logos/plate.jpg` |
+| `console-logos` | Mur enduit beige en lumière dorée, console en travertin, lampe laiton, hortensias, cadres bronze Maison Bélier / DJ ROLLA (image fournie, convertie en 9:16) | `decors/console-logos/plate.jpg` |
 | `mur-noir-logos` | Mur noir mat, deux cadres en laiton éclairés : Maison Bélier / ROLLA. Le sujet est assombri et réchauffé pour coller aux appliques ; idéal si le tournage est fait dans une pièce sombre | `decors/mur-noir-logos/plate.jpg` |
 
 Les logos officiels (`maison-belier.png`, `rolla.png`, ivoire sur noir) se trouvent dans
@@ -91,7 +92,12 @@ Chaque décor est un dossier `decors/<id>/` contenant `decor.json` (flou de prof
 
 Pour un rendu photoréaliste maximal, remplacez une plaque par une photo, ou par une image IA
 générée **une seule fois** (quelques centimes). Ajouter un décor revient à copier un dossier
-et changer la plaque.
+et changer la plaque. Une photo carrée ou horizontale se convertit en plaque verticale avec :
+
+```bash
+# --anchor : ligne de la photo (ici le bas des cadres, y=672) placée juste au-dessus de la tête
+python tools/photo_to_plate.py photo.webp decors/mon-decor/plate.jpg --anchor 672:540 --bottom-strip 1040
+```
 
 ## Contrôle qualité automatique
 | Contrôle | Méthode |
