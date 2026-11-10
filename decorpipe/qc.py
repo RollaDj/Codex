@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
+from fractions import Fraction
 from pathlib import Path
 
 import cv2
@@ -82,7 +83,7 @@ def _faststart(path: Path) -> bool:
 
 
 def run_qc(master: Path, workdir: Path, final: Path, report_dir: Path,
-           strict: bool, label: str) -> dict:
+           strict: bool, label: str, source: Path | None = None, trimmed: bool = True) -> dict:
     report_dir.mkdir(parents=True, exist_ok=True)
     checks: list[Check] = []
     m = media_info(master)
@@ -116,10 +117,26 @@ def run_qc(master: Path, workdir: Path, final: Path, report_dir: Path,
     nf_m, nf_f = count_frames(master), count_frames(final)
     checks.append(Check("Nombre d'images identique", "PASS" if nf_m == nf_f else "FAIL",
                         f"source {nf_m} / export {nf_f}"))
+    src_info = media_info(source) if source is not None else None
+    if src_info is not None:
+        f_fps = float(Fraction(v.get("avg_frame_rate", "0/1")))
+        same = abs(f_fps - float(src_info.fps)) < 0.02
+        checks.append(Check("Cadence identique à l'original", "PASS" if same else "WARN",
+                            f"original {float(src_info.fps):.3f} i/s · export {f_fps:.3f} i/s",
+                            "" if same else "cadence normalisée (source à cadence variable ou > 30 i/s)"))
+        if not trimmed:
+            gap = abs(float(v.get("duration") or 0) - src_info.duration)
+            ok = gap <= 1.0 / max(f_fps, 1) + 1e-3
+            checks.append(Check("Durée identique à l'original", "PASS" if ok else "FAIL",
+                                f"écart {gap * 1000:.1f} ms", "tolérance : 1 image"))
 
     # 3. Audio = original -------------------------------------------------------
     if m.has_audio and a is not None:
-        if m.acodec == "aac" and a["codec_name"] == "aac":
+        if src_info is not None and not trimmed and src_info.acodec == "aac" and a["codec_name"] == "aac":
+            same = audio_pcm_md5(source) == audio_pcm_md5(final)
+            checks.append(Check("Audio identique à l'original (bit à bit)", "PASS" if same else "FAIL",
+                                "MD5 du son décodé identique au fichier iPhone" if same else "MD5 différent"))
+        elif src_info is None and m.acodec == "aac" and a["codec_name"] == "aac":
             same = audio_pcm_md5(master) == audio_pcm_md5(final)
             checks.append(Check("Audio original bit à bit", "PASS" if same else "FAIL",
                                 "MD5 PCM identique" if same else "MD5 différent"))

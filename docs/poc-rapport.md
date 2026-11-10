@@ -36,6 +36,43 @@ des contours : médiane 0,023 et p95 0,062.
   contrôle qualité). Un Reel de 30 s demande donc environ 5 min pour le premier décor et 4 min
   pour chaque décor suivant, sur 4 cœurs CPU.
 
+## Rush réel : `IMG_2102.MOV` (10 novembre 2026)
+Prise iPhone réelle : 4K vertical (2160×3840) H.264 SDR, 24 i/s, 12,6 s, AAC mono 48 kHz, plus
+4 pistes de métadonnées Apple. Plan assis, à main levée et en contre-plongée, grande baie vitrée
+lumineuse en contre-jour, t-shirt blanc, micro-cravate, chaise de bureau verte, mains qui
+avancent vers l'objectif. Le clip est traité **en entier**, sans coupe, donc l'audio est copié
+bit à bit.
+
+| Décor | Verdict | Synchro labiale | Visage SSIM min | Sujet SSIM min | Rendu |
+|---|---|---|---|---|---|
+| Haussmannien | WARN | 0 image / 0,996 | 0,980 | 0,977 | 93 s |
+| Studio noir | WARN | 0 image / 0,997 | 0,980 | 0,976 | 94 s |
+| Intérieur design | WARN | 0 image / 0,997 | 0,979 | 0,976 | 92 s |
+| Hôtel de luxe | WARN | 0 image / 0,996 | 0,979 | 0,975 | 93 s |
+
+Contrôles communs, tous PASS :
+- **Audio** : décodé, il est **identique au bit près au fichier iPhone** (même MD5), avec un
+  décalage de 0,00 ms.
+- **Timing** : 24,000 i/s comme l'original, 302 images sur 302, durée à 1,7 ms de l'original
+  (moins d'une image).
+- **Format** : Instagram 1080×1920, avec faststart.
+- **Visage** : dans la zone sûre des Reels, aucun trou dans le visage, aucun saut de silhouette.
+- **Suivi caméra** : 301 images sur 301 suivies (jusqu'à 24 px de mouvement à main levée) ; le
+  décor bouge avec la caméra.
+
+Le seul **WARN** est le scintillement des contours (p95 0,089 pour un seuil de 0,08). Il
+s'explique par le tournage à main levée et les mains qui passent très près de l'objectif. En
+vérifiant les images une à une, les mains floues restent opaques et la chaise verte visible
+entre le bras et le torse est bien remplacée par le décor.
+
+**Défauts trouvés grâce à ce rush, et corrigés**
+1. **Cadence** : 24 i/s était arrondi à 23,976 i/s, soit 12 ms de dérive en fin de clip. On
+   choisit désormais la cadence standard la plus proche.
+2. **Fichier de travail en MKV** : il perdait le « priming » AAC de l'iPhone (2 112
+   échantillons, 44 ms). L'export final restait juste, mais le contrôle qualité se comparait à
+   une référence fausse. Le fichier de travail est maintenant un MOV, et le contrôle qualité
+   compare aussi directement au fichier iPhone d'origine (MD5 audio, cadence, durée).
+
 ## Test du garde-fou pour les moteurs IA (sans dépense)
 `tools/simulate_ai_drift.py` fabrique une fausse sortie « IA » en 720×1280, avec un retard de
 2 images, une bouche redessinée (floutée) et une dérive de tonalité. Elle passe ensuite dans le

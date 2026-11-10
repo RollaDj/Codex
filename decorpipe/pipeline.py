@@ -70,7 +70,8 @@ def process(input_path: str | Path, decor_ids: list[str], engine: str = "local",
         final = out_dir / f"{label}.mp4"
         log("[4/4] Export Instagram + contrôle qualité")
         export_instagram(comp, ing.master, final, ing.audio_mode)
-        qc = run_qc(ing.master, workdir, final, out_dir / "qc", strict, label)
+        qc = run_qc(ing.master, workdir, final, out_dir / "qc", strict, label,
+                    source=input_path, trimmed=start > 0 or duration is not None)
         res = {"decor": decor.id, "engine": engine, "output": str(final),
                "verdict": qc["verdict"], "render_seconds": round(time.time() - t1, 1),
                "cost_usd": estimate_usd(engine, seconds), "details": extra}

@@ -91,7 +91,7 @@ def fake_api(tmp_path):
     import decorpipe.engines.ai_common as ac
     ac_poll = ac.poll
     ac.poll = lambda fn, **kw: ac_poll(fn, interval=0.01, **kw)
-    master = tmp_path / "master.mkv"
+    master = tmp_path / "master.mov"
     subprocess.run(["ffmpeg", "-v", "error", "-f", "lavfi", "-i", "testsrc=s=1080x1920:d=1:r=25",
                     "-pix_fmt", "yuv420p", "-c:v", "libx264", str(master)], check=True)
     yield seen, master, tmp_path

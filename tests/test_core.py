@@ -71,6 +71,9 @@ def test_target_fps_snaps_iphone_rates():
     assert target_fps(Fraction(2997, 100), False) == Fraction(30000, 1001)
     assert target_fps(Fraction(60), False) == Fraction(30)
     assert target_fps(Fraction(25), False) == Fraction(25)
+    assert target_fps(Fraction(24), False) == Fraction(24)            # was snapped to 23.976
+    assert target_fps(Fraction(24000, 1001), False) == Fraction(24000, 1001)
+    assert target_fps(Fraction(5994, 100), False) == Fraction(30000, 1001)
 
 
 def test_faststart_detection(tmp_path):

@@ -46,7 +46,7 @@ def fake_ai(master: Path, out: Path, delay: int = 2) -> None:
 
 def main() -> int:
     work = Path(sys.argv[1])
-    master = work / "master.mkv"
+    master = work / "master.mov"
     ai = work / "fake_ai_output.mp4"
     fake_ai(master, ai)
     out_dir = Path(__file__).resolve().parent.parent / "output" / "simulation_ia"

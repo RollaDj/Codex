@@ -43,15 +43,19 @@ def _grab(path: Path, t: float, vf: str, w: int, h: int) -> np.ndarray | None:
     return np.frombuffer(proc.stdout, np.uint8)[: w * h * 3].reshape(h, w, 3)
 
 
+STANDARD_FPS = (Fraction(24000, 1001), Fraction(24), Fraction(25), Fraction(30000, 1001),
+                Fraction(30), Fraction(50), Fraction(60000, 1001), Fraction(60))
+
+
 def target_fps(src: Fraction, keep_high_fps: bool) -> Fraction:
+    """Closest standard rate (24 stays 24, 29.97 stays 29.97); >30 → 30 unless asked."""
     f = float(src)
-    for std in (Fraction(24000, 1001), Fraction(24), Fraction(25),
-                Fraction(30000, 1001), Fraction(30)):
-        if abs(f - float(std)) < 0.6:
-            return std
-    if f > 31 and not keep_high_fps:
+    if f <= 0:
         return Fraction(30)
-    return Fraction(round(f)) if f > 0 else Fraction(30)
+    if f > 31 and not keep_high_fps:
+        return Fraction(30000, 1001) if abs(f - 60000 / 1001) < abs(f - 60) else Fraction(30)
+    best = min(STANDARD_FPS, key=lambda std: abs(f - float(std)))
+    return best if abs(f - float(best)) < 0.6 else Fraction(round(f))
 
 
 def hdr_chain(info: MediaInfo) -> str:
@@ -99,7 +103,9 @@ def ingest(src: str | Path, workdir: str | Path, start: float = 0.0,
     crop = compute_crop(info, pre, start)
     fps = target_fps(info.fps, keep_high_fps)
     trimmed = start > 0 or duration is not None
-    master = workdir / "master.mkv"
+    # MOV (not MKV): keeps the iPhone AAC priming/edit list, so a copied track stays
+    # sample-aligned with the picture exactly as in the original file.
+    master = workdir / "master.mov"
 
     vf = (f"{pre}crop={crop[0]}:{crop[1]}:{crop[2]}:{crop[3]},"
           f"scale={OUT_W}:{OUT_H}:out_color_matrix=bt709:out_range=tv:"

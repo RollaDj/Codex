@@ -45,7 +45,7 @@ python -m decorpipe run input/ma_video.MOV --decor studio-noir --strict
 python -m decorpipe batch ~/iCloud/Rushes --decor haussmannien,studio-noir
 
 # Mosaïque côte à côte (source + décors) pour choisir
-python -m decorpipe compare work/<clip>/master.mkv output/*_local.mp4 -o output/comparatif.mp4
+python -m decorpipe compare work/<clip>/master.mov output/*_local.mp4 -o output/comparatif.mp4
 
 # Comparer les coûts avant de choisir un moteur
 python -m decorpipe estimate 30 --decors 4
@@ -101,9 +101,14 @@ partenariat), Instagram et l'AI Act européen peuvent demander une mention « co
 retouché/IA ». Le fichier exporté porte un commentaire de métadonnées en ce sens.
 
 ## Preuve de concept
-Sur 10 s et 4 décors : **5/5 PASS**, audio décalé de 0,00 ms, synchro labiale avec 0 image de
-décalage (corrélation 0,9998), visage SSIM ≥ 0,98, et 0 €. Les détails, la comparaison
-qualité/coût et le test du garde-fou IA sont dans [docs/poc-rapport.md](docs/poc-rapport.md).
+- **Clip de test** (10 s, 4 décors) : 5/5 PASS, audio décalé de 0,00 ms, synchro labiale avec
+  0 image de décalage, visage SSIM ≥ 0,98, et 0 €.
+- **Rush iPhone réel** (12,6 s en 4K, à main levée, en contre-jour) : son identique au bit près
+  au fichier iPhone, 24 i/s et 302 images conservées, synchro labiale avec 0 image de décalage.
+  Un seul avertissement, sur le scintillement des contours lors des mouvements de mains rapides.
+
+Les détails, la comparaison qualité/coût et le test du garde-fou IA sont dans
+[docs/poc-rapport.md](docs/poc-rapport.md).
 
 ## Structure
 ```
