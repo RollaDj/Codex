@@ -512,10 +512,25 @@ def make_print(out: Path, stem: str, lines: list[tuple[str, str, int, int]]) -> 
     logo = next((LOGO_DIR / f"{stem}{ext}" for ext in (".svg", ".png", ".webp", ".jpg", ".jpeg")
                  if (LOGO_DIR / f"{stem}{ext}").exists()), None)
     if logo is not None:
+        import numpy as np
         lg = _load_logo(logo)
-        k = min(W * 0.62 / lg.width, H * 0.42 / lg.height)
+        arr = np.asarray(lg)
+        if arr[..., 3].min() == 255:
+            # Opaque artwork (e.g. "ivory on black"): keep the official colourway. The
+            # print takes the artwork's background colour and the logo is cropped to its ink.
+            rgb = arr[..., :3].astype(int)
+            border = np.concatenate([rgb[0], rgb[-1], rgb[:, 0], rgb[:, -1]])
+            bg = tuple(int(v) for v in np.median(border, 0))
+            ys, xs = np.where(np.abs(rgb - bg).max(-1) > 40)
+            if len(xs):
+                lg = lg.crop((xs.min(), ys.min(), xs.max() + 1, ys.max() + 1))
+            img = Image.new("RGB", (W, H), bg)
+            fit_w, fit_h = 0.74, 0.50
+        else:
+            fit_w, fit_h = 0.62, 0.42
+        k = min(W * fit_w / lg.width, H * fit_h / lg.height)
         lg = lg.resize((int(lg.width * k), int(lg.height * k)), Image.LANCZOS)
-        img.paste(lg, ((W - lg.width) // 2, (H - lg.height) // 2), lg)
+        img.paste(lg, ((W - lg.width) // 2, int((H - lg.height) * 0.47)), lg)
     else:
         d = ImageDraw.Draw(img)
         blocks = []

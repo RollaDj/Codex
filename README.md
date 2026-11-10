@@ -72,8 +72,9 @@ Sorties dans `output/` :
 | `mur-clair-logos` | Mur blanc cassé en lumière du jour, deux cadres noirs : Maison Bélier / ROLLA. **À privilégier pour un tournage en lumière du jour** | `decors/mur-clair-logos/plate.jpg` |
 | `mur-noir-logos` | Mur noir mat, deux cadres en laiton éclairés : Maison Bélier / ROLLA. Le sujet est assombri et réchauffé pour coller aux appliques ; idéal si le tournage est fait dans une pièce sombre | `decors/mur-noir-logos/plate.jpg` |
 
-Les logos officiels se déposent dans `decors/mur-noir-logos/logos/` (SVG ou PNG) et servent aux
-deux variantes. Tant qu'ils manquent, un logotype typographique provisoire est utilisé.
+Les logos officiels (`maison-belier.png`, `rolla.png`, ivoire sur noir) se trouvent dans
+`decors/mur-noir-logos/logos/` et servent aux deux variantes. **`mur-clair-logos` est le décor
+par défaut** pour les vidéos tournées en journée.
 
 **Règle de réalisme** : la lumière du décor doit ressembler à celle du tournage. Un rush filmé en
 plein jour s'incruste de façon crédible dans un décor clair ; un décor sombre demande soit un

@@ -18,7 +18,7 @@ def main(argv: list[str] | None = None) -> int:
 
     r = sub.add_parser("run", help="traiter une vidéo")
     r.add_argument("input", help="fichier vidéo (MOV/MP4 iPhone)")
-    r.add_argument("--decor", default="haussmannien",
+    r.add_argument("--decor", default="mur-clair-logos",
                    help="identifiant de décor, liste séparée par des virgules, ou 'all'")
     r.add_argument("--engine", choices=["local", "runway", "kling"], default="local")
     r.add_argument("--start", type=float, default=0.0, help="début en secondes")
@@ -34,7 +34,7 @@ def main(argv: list[str] | None = None) -> int:
 
     b = sub.add_parser("batch", help="traiter tous les rushes d'un dossier (ex. dossier iCloud/AirDrop)")
     b.add_argument("folder", help="dossier contenant les .MOV/.MP4")
-    b.add_argument("--decor", default="haussmannien", help="décor(s) : id, liste, ou 'all'")
+    b.add_argument("--decor", default="mur-clair-logos", help="décor(s) : id, liste, ou 'all'")
     b.add_argument("--strict", action="store_true")
     b.add_argument("--out", default=None)
 
