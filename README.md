@@ -69,7 +69,18 @@ Sorties dans `output/` :
 | `studio-noir` | Studio noir : fond continu anthracite, halo de lumière chaude | `decors/studio-noir/plate.jpg` |
 | `interieur-design` | Intérieur design : enduit à la chaux, enfilade en noyer, luminaires | `decors/interieur-design/plate.jpg` |
 | `hotel-luxe` | Hôtel de luxe : couloir en noyer cannelé, laiton, marbre noir, lustre | `decors/hotel-luxe/plate.jpg` |
-| `mur-noir-logos` | Mur noir mat, deux cadres en laiton éclairés : Maison Bélier / ROLLA (logos officiels à déposer dans `decors/mur-noir-logos/logos/`) | `decors/mur-noir-logos/plate.jpg` |
+| `mur-clair-logos` | Mur blanc cassé en lumière du jour, deux cadres noirs : Maison Bélier / ROLLA. **À privilégier pour un tournage en lumière du jour** | `decors/mur-clair-logos/plate.jpg` |
+| `mur-noir-logos` | Mur noir mat, deux cadres en laiton éclairés : Maison Bélier / ROLLA. Le sujet est assombri et réchauffé pour coller aux appliques ; idéal si le tournage est fait dans une pièce sombre | `decors/mur-noir-logos/plate.jpg` |
+
+Les logos officiels se déposent dans `decors/mur-noir-logos/logos/` (SVG ou PNG) et servent aux
+deux variantes. Tant qu'ils manquent, un logotype typographique provisoire est utilisé.
+
+**Règle de réalisme** : la lumière du décor doit ressembler à celle du tournage. Un rush filmé en
+plein jour s'incruste de façon crédible dans un décor clair ; un décor sombre demande soit un
+tournage dans une pièce sombre avec une lumière chaude, soit les réglages d'intégration
+`subject_exposure`, `subject_warmth`, `subject_falloff` et `rim_suppress` dans `decor.json`
+(lumière globale seulement : les traits et les lèvres ne sont pas modifiés, ce que le contrôle
+qualité vérifie).
 
 Chaque décor est un dossier `decors/<id>/` contenant `decor.json` (flou de profondeur,
 étalonnage, habillage lumineux, prompt pour les moteurs IA) et une **plaque** :

@@ -31,12 +31,17 @@ class Check:
     detail: str = ""
 
 
-def _ssim_map(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+def _ssim_map(a: np.ndarray, b: np.ndarray, structure_only: bool = False) -> np.ndarray:
+    """SSIM map; structure_only keeps the structure term (edges, features, lips) and
+    ignores a global brightness/contrast change (a deliberate relight)."""
     a, b = a.astype(np.float32), b.astype(np.float32)
     c1, c2 = (0.01 * 255) ** 2, (0.03 * 255) ** 2
     g = lambda x: cv2.GaussianBlur(x, (11, 11), 1.5)
     ma, mb = g(a), g(b)
     va, vb, cov = g(a * a) - ma * ma, g(b * b) - mb * mb, g(a * b) - ma * mb
+    if structure_only:
+        c3 = c2 / 2
+        return (cov + c3) / (np.sqrt(np.maximum(va, 0) * np.maximum(vb, 0)) + c3)
     return ((2 * ma * mb + c1) * (2 * cov + c2)) / ((ma * ma + mb * mb + c1) * (va + vb + c2))
 
 
@@ -159,6 +164,7 @@ def run_qc(master: Path, workdir: Path, final: Path, report_dir: Path,
     # 4/5. Picture: subject fidelity, lip motion, matte stability --------------
     track = FaceTrack(every=1, smooth=0.3)
     lip_src, lip_out, ssim_subj, psnr_subj, ssim_face, psnr_face = [], [], [], [], [], []
+    tone_face: list[float] = []
     flicker, coverage, boxes = [], [], []
     prev_ms = prev_mo = prev_a = prev_y = None
     sheet_idx = {int(nf_m * f) for f in (0.08, 0.36, 0.64, 0.92)}
@@ -190,7 +196,7 @@ def run_qc(master: Path, workdir: Path, final: Path, report_dir: Path,
             prev_ms, prev_mo = ms, mo
         if i % 10 == 0:
             ys, yo = _luma(src), _luma(out)
-            smap = _ssim_map(ys, yo)
+            smap = _ssim_map(ys, yo, structure_only=True)
             subj = cv2.erode((al >= 252).astype(np.uint8), np.ones((13, 13), np.uint8)) > 0
             if subj.any():
                 ssim_subj.append(float(smap[subj].mean()))
@@ -199,20 +205,28 @@ def run_qc(master: Path, workdir: Path, final: Path, report_dir: Path,
                 core = face_core_mask((H, W), face) > 0.5
                 ssim_face.append(float(smap[core].mean()))
                 psnr_face.append(_psnr(ys, yo, core))
+                tone_face.append(float(yo[core].mean() / max(ys[core].mean(), 1e-3)))
         if i in sheet_idx:
             sheet.append((src.copy(), al.copy(), out.copy()))
 
     if ssim_subj:
         s_min, p_med = min(ssim_subj), float(np.median(psnr_subj))
         st = "PASS" if s_min >= 0.97 else ("WARN" if s_min >= 0.93 else "FAIL")
-        checks.append(Check("Sujet inchangé (SSIM zone opaque)", st,
+        checks.append(Check("Sujet inchangé (structure, SSIM)", st,
                             f"SSIM min {s_min:.4f} · PSNR médian {p_med:.1f} dB",
                             "mode strict : seul l'encodage H.264 intervient" if strict else
                             "inclut l'harmonisation colorimétrique légère du préréglage"))
     if ssim_face:
         f_min, fp = min(ssim_face), float(np.median(psnr_face))
         st = "PASS" if f_min >= 0.97 else ("WARN" if f_min >= 0.93 else "FAIL")
-        checks.append(Check("Visage inchangé (SSIM)", st, f"SSIM min {f_min:.4f} · PSNR médian {fp:.1f} dB"))
+        checks.append(Check("Visage inchangé (structure, SSIM)", st,
+                            f"SSIM min {f_min:.4f} · PSNR médian {fp:.1f} dB",
+                            "traits, regard et lèvres ; la lumière globale est mesurée à part"))
+        if tone_face:
+            t = float(np.median(tone_face))
+            checks.append(Check("Lumière du visage (intégration)", "INFO",
+                                f"luminosité ×{t:.2f} ({np.log2(max(t, 1e-3)):+.2f} EV)",
+                                "réglage volontaire du préréglage pour coller à la lumière du décor"))
     if len(lip_src) > 10:
         x, y = np.array(lip_src), np.array(lip_out)
         lag, corr = _xcorr_lag(x, y, 5)

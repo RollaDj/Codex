@@ -564,6 +564,14 @@ def framed_print(x: float, zc: float, w: float, h: float, wall_y: float, print_p
              (1.0, 0.78, 0.55), size_y=w * 0.55)
 
 
+def _logo_prints() -> tuple[Path, Path]:
+    tmp = ROOT / "decors" / "mur-noir-logos" / "prints"
+    left = make_print(tmp / "maison-belier.jpg", "maison-belier",
+                      [("MAISON", "Caladea", 132, 34), ("BÉLIER", "Caladea", 132, 34)])
+    right = make_print(tmp / "rolla.jpg", "rolla", [("ROLLA", "Inter", 170, 58)])
+    return left, right
+
+
 def mur_noir_logos() -> None:
     """Matte black wall, two brass frames with the Maison Bélier and ROLLA logos,
     brass picture lights. Camera matches a seated, low-angle iPhone selfie."""
@@ -576,10 +584,7 @@ def mur_noir_logos() -> None:
     box("floor", (6, 6, 0.05), (0, 0, -0.025), wood("floor_o", base=(0.16, 0.10, 0.06),
                                                      dark=(0.07, 0.04, 0.02), planks=True, grain="Y", scale=14))
     box("skirting", (6, 0.02, 0.12), (0, wall_y - 0.01, 0.06), black)
-    tmp = ROOT / "decors" / "mur-noir-logos" / "prints"
-    left = make_print(tmp / "maison-belier.jpg", "maison-belier",
-                      [("MAISON", "Caladea", 132, 34), ("BÉLIER", "Caladea", 132, 34)])
-    right = make_print(tmp / "rolla.jpg", "rolla", [("ROLLA", "Inter", 170, 58)])
+    left, right = _logo_prints()
     w, h, zc = 0.42, 0.55, 2.0
     framed_print(-0.58, zc, w, h, wall_y, left, brass)
     framed_print(0.58, zc, w, h, wall_y, right, brass)
@@ -589,12 +594,34 @@ def mur_noir_logos() -> None:
          color=(1.0, 0.86, 0.7), radius=0.5)
 
 
+def mur_clair_logos() -> None:
+    """Same composition on a warm off-white limewash wall in soft daylight, with thin
+    black frames: matches footage shot in a bright room (no relight of the subject)."""
+    world((0.85, 0.88, 0.95), 0.06)
+    camera(loc=(0, -1.0, 1.05), target=(0, 1.6, 1.5), lens=26)
+    wall_y = 1.6
+    lime = material("limewash_c", (0.72, 0.69, 0.64), rough=0.9, noise=(2.5, 0.07), bump=0.06)
+    black_f = material("black_frame", (0.015, 0.015, 0.016), 0.35)
+    box("wall", (6, 0.1, 4), (0, wall_y + 0.05, 2.0), lime)
+    box("floor", (6, 6, 0.05), (0, 0, -0.025), wood("floor_c", base=(0.42, 0.30, 0.19),
+                                                     dark=(0.28, 0.19, 0.11), planks=True, grain="Y", scale=14))
+    box("skirting", (6, 0.02, 0.12), (0, wall_y - 0.01, 0.06), material("sk", (0.78, 0.76, 0.72), 0.6))
+    left, right = _logo_prints()
+    w, h, zc = 0.42, 0.55, 2.0
+    framed_print(-0.58, zc, w, h, wall_y, left, black_f, light=False)
+    framed_print(0.58, zc, w, h, wall_y, right, black_f, light=False)
+    # Big soft window to camera right (like the original room) + bounce from the left.
+    area("window", (2.2, 0.4, 2.0), (0.0, wall_y, 1.5), 2.4, 260, (0.98, 0.99, 1.0), size_y=2.8)
+    area("bounce", (-1.8, -0.3, 1.6), (0.0, wall_y, 1.5), 2.0, 30, (1.0, 0.97, 0.92))
+
+
 SCENES = {
     "studio-noir": (studio_noir, -0.3),
     "haussmannien": (haussmannien, -0.7),
     "interieur-design": (interieur_design, -0.35),
     "hotel-luxe": (hotel_luxe, 0.0),
     "mur-noir-logos": (mur_noir_logos, 0.0),
+    "mur-clair-logos": (mur_clair_logos, 0.0),
 }
 
 

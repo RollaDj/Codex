@@ -34,6 +34,13 @@ class Decor:
     shadow_offset: tuple[float, float] = (0.0, 0.02)
     grain: float | str = "auto"
     track_camera: bool = True
+    # Subject integration ("relight light"): global tone only — features untouched.
+    # Ignored in --strict mode.
+    subject_exposure: float = 0.0   # EV, e.g. -0.5 to sit in a dark room
+    subject_warmth: float = 0.0     # -1 cool … +1 warm (tungsten picture lights)
+    subject_contrast: float = 1.0
+    subject_falloff: float = 0.0    # 0..1 darker toward the bottom/sides (top-front key light)
+    rim_suppress: float = 0.0       # 0..1 removes the bright backlight rim of the old room
     prompt: str = ""             # used by AI engines (Runway Aleph / Kling edit)
     notes: str = ""
 

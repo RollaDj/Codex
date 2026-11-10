@@ -162,17 +162,38 @@ def estimate_camera_motion(master: Path, matte: Path, w: int, h: int, log=print)
 
 # ---------------------------------------------------------------- per-clip analysis
 def estimate_grain(src: np.ndarray, alpha: np.ndarray) -> float:
-    """Sensor-noise sigma (0..255) measured on flat areas of the original background."""
+    """Sensor-noise sigma (0..255) of the footage, measured on flat, non-clipped areas
+    (background and subject: a blown-out window has no grain to measure)."""
     g = cv2.cvtColor(src, cv2.COLOR_RGB2GRAY).astype(np.float32)
     resid = g - cv2.GaussianBlur(g, (0, 0), 1.2)
     grad = cv2.magnitude(cv2.Sobel(g, cv2.CV_32F, 1, 0), cv2.Sobel(g, cv2.CV_32F, 0, 1))
-    bgm = (alpha < 10)
-    if bgm.sum() < 5000:
-        bgm = np.ones_like(bgm)
-    flat = bgm & (grad < np.percentile(grad[bgm], 30))
+    usable = (g > 20) & (g < 235)
+    if usable.sum() < 5000:
+        return 1.5
+    flat = usable & (grad < np.percentile(grad[usable], 25))
     if flat.sum() < 1000:
         return 1.5
     return float(np.clip(resid[flat].std() * 1.15, 0.6, 4.0))
+
+
+def subject_tone(decor: Decor) -> tuple[np.ndarray, float] | None:
+    """Clip-constant RGB gain + contrast for the subject, or None if neutral."""
+    if not (decor.subject_exposure or decor.subject_warmth or decor.subject_contrast != 1.0):
+        return None
+    gain = 2.0 ** decor.subject_exposure
+    w = decor.subject_warmth
+    rgb = np.array([1 + 0.10 * w, 1 + 0.015 * w, 1 - 0.10 * w], np.float32) * gain
+    return rgb, decor.subject_contrast
+
+
+def falloff_map(w: int, h: int, face_center: tuple[float, float] | None, amount: float) -> np.ndarray:
+    """Soft key-light falloff centred on the face: 1 at the face, darker below / to the sides."""
+    if amount <= 0:
+        return np.ones((h, w), np.float32)
+    cx, cy = face_center or (w / 2, h * 0.3)
+    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+    d = np.sqrt(((xx - cx) / (w * 0.75)) ** 2 + (np.maximum(yy - cy, 0) / (h * 0.75)) ** 2)
+    return (1 - amount * np.clip(d, 0, 1) ** 1.5).astype(np.float32)
 
 
 def harmonize_gains(samples: list[tuple[np.ndarray, np.ndarray]], plate: np.ndarray,
@@ -222,6 +243,17 @@ def composite_clip(master: Path, workdir: Path, decor: Decor, out_video: Path,
     motion = (estimate_camera_motion(master, matte, W, H, log)
               if decor.track_camera else None)
     log(f"  harmonisation RVB {np.round(gains, 3).tolist()} · grain σ={sigma:.2f}")
+    tone = None if strict else subject_tone(decor)
+    face_c = None
+    if not strict and decor.subject_falloff > 0:
+        from .faces import detect_face, face_box
+        cs = [face_box(f) for f in (detect_face(s_) for s_, _ in samples) if f is not None]
+        if cs:
+            face_c = (float(np.median([x + w_ / 2 for x, _, w_, _ in cs])),
+                      float(np.median([y + h_ / 2 for _, y, _, h_ in cs])))
+    fall = (falloff_map(W, H, face_c, decor.subject_falloff)[..., None]
+            if not strict and decor.subject_falloff > 0 else None)
+    rim = 0.0 if strict else decor.rim_suppress
 
     ox, oy = (bw - W) / 2, (bh - H) / 2
     choke = (cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * decor.edge_choke + 1,) * 2)
@@ -264,6 +296,17 @@ def composite_clip(master: Path, workdir: Path, decor: Decor, out_video: Path,
         fg = src * w_src + fgr * (1 - w_src)          # original pixels wherever opaque
         if harmonize > 0:
             fg = fg * gains
+        if tone is not None:                          # global tone only: same pixels, new light
+            fg = fg * tone[0]
+            if tone[1] != 1.0:
+                fg = (fg - 0.45) * tone[1] + 0.45
+        if fall is not None:
+            fg = fg * fall
+        if rim > 0:                                   # the old room's backlight rim
+            inner = a_small * (1 - cv2.GaussianBlur(a_small, (0, 0), 10 / q))
+            inner = cv2.resize(np.clip(inner * 2.5, 0, 1), (W, H))[..., None]
+            fg = fg * (1 - rim * 0.55 * inner)
+        fg = np.clip(fg, 0, 1)
         a3 = a[..., None]
         out = fg * a3 + bg * (1 - a3)
 
@@ -289,4 +332,6 @@ def composite_clip(master: Path, workdir: Path, decor: Decor, out_video: Path,
             "harmonize_gains": np.round(gains, 4).tolist(), "grain_sigma": round(sigma, 3),
             "camera_tracking": motion is not None,
             "camera_max_shift_px": float(np.abs(np.array(motion)[:, :, 2]).max()) if motion else 0.0,
-            "strict": strict}
+            "strict": strict, "subject_tone": None if tone is None else
+            {"gain_rgb": np.round(tone[0], 3).tolist(), "contrast": tone[1]},
+            "subject_falloff": 0.0 if fall is None else decor.subject_falloff, "rim_suppress": rim}

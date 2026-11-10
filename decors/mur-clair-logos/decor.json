@@ -1,0 +1,17 @@
+{
+  "label": "Mur clair + logos Maison Bélier / ROLLA (lumière du jour)",
+  "plate": "plate.jpg",
+  "focus": [0.5, 0.45],
+  "blur": 2.5,
+  "exposure": 1.0,
+  "look": {"contrast": 1.0, "saturation": 0.95, "warmth": 0.05, "vignette": 0.1},
+  "harmonize": 0.3,
+  "edge_choke": 1,
+  "light_wrap": 0.2,
+  "wrap_radius": 24,
+  "ambient_shadow": 0.08,
+  "shadow_offset": [-0.03, 0.01],
+  "grain": "auto",
+  "prompt": "Replace only the background with a warm off-white limewash wall in soft daylight with two thin black frames containing the Maison Bélier logo (left) and the ROLLA logo (right). Keep the person, face, lip movements, hands and clothes exactly as in the original video.",
+  "notes": "À privilégier quand le tournage est fait en lumière du jour : aucune correction de lumière sur le sujet n'est nécessaire. Logos officiels : decors/mur-noir-logos/logos/."
+}
